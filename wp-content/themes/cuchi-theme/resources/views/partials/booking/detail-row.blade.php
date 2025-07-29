@@ -13,7 +13,7 @@
       
       @if (!empty($item['select'][0]))
         @php
-            $icon = wp_get_attachment_image_url($item['select'][0]['icon'], 'full');
+            $icon = wp_get_attachment_image_url(get_theme_mod('custom_logo'), 'full');
         @endphp
         <div class="bookingfeature-section__left__booking">
           <div class="bookingfeature-section__left__booking__content"><img class="bookingfeature-section__left__booking__content__icon" src="{{ $icon }}" alt=""/>

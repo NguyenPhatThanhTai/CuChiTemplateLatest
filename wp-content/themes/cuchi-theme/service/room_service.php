@@ -32,13 +32,14 @@ class RoomService
             $bookings = $this->pdo->prepare("
                 SELECT COUNT(*) FROM bookings
                 WHERE room_id = ?
-                  AND check_in < ?
-                  AND check_out > ?
+                  AND CAST(check_in AS DATE) <= ?
+                  AND CAST(check_out AS DATE) >= ?
             ");
-            $bookings->execute([$room['id'], $format_check_in->format('d/m/Y'), $format_check_out->format('d/m/Y')]);
+            $bookings->execute([$room['id'], $format_check_in->format('Y-m-d'), $format_check_out->format('Y-m-d')]);
             $booked = $bookings->fetchColumn();
 
             if ($booked < $room['total_rooms']) {
+                $roomp['total_rooms'] -= $booked;
                 $available[] = $room;
             }
         }
