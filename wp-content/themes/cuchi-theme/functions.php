@@ -717,5 +717,63 @@ add_action('customize_register', function ($wp_customize) {
 
 
 
+/**
+ * ========= Admin Tool (SPA) glue =========
+ * - Registers page template
+ * - Enqueues SPA assets
+ * - Localizes WP Ajax URL + nonce
+ * - Loads DB helper and router
+ */
 
+// 1) DB helper FIRST
+require_once get_theme_file_path('service/db_config/db.php'); // must provide get_db_connection()
+
+// 2) Router (Ajax endpoints)
+require_once get_theme_file_path('service/router/router.php');
+
+// 3) Register page template & route template to view
+/** ----------------------------------------------------------------
+ * Admin Tool (SPA) bootstrap
+ * ---------------------------------------------------------------- */
+add_filter('theme_page_templates', function ($templates) {
+    $templates['admin-tool.php'] = 'Admin Tool (SPA)';
+    return $templates;
+  });
+  
+  add_filter('template_include', function ($template) {
+    if (is_page() && get_page_template_slug() === 'admin-tool.php') {
+      return get_theme_file_path('resources/views/admin/admin-tool.php');
+    }
+    return $template;
+  });
+  
+  add_action('wp_enqueue_scripts', function () {
+    if (!(is_page() && get_page_template_slug() === 'admin-tool.php')) return;
+  
+    // base styles for cards/table/modal (keep your existing CSS too)
+    wp_enqueue_style(
+      'admin-tool-css',
+      get_theme_file_uri('resources/styles/admin.css'),
+      [],
+      '2.0.' . time()
+    );
+  
+    // Media Library (for the picker)
+    wp_enqueue_media();
+  
+    // jQuery + app
+    wp_enqueue_script(
+      'admin-tool-js',
+      get_theme_file_uri('resources/scripts/admin-app.js'),
+      ['jquery'],
+      '2.0.' . time(),
+      true
+    );
+  
+    // Nonce for ajax security
+    wp_localize_script('admin-tool-js', 'ADMIN_TOOL', [
+      'ajaxurl' => admin_url('admin-ajax.php'),
+      'nonce'   => wp_create_nonce('admin_tool_nonce'),
+    ]);
+  });
 
